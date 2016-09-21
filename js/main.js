@@ -47,8 +47,10 @@
 		
 		self.gridWidth = 600;
 		self.gridHeight = 600;
-		self.xMax = 6.0;
-		self.yMax = 6.0;
+		self.gridCenterX = 0.0;
+		self.gridCenterY = 0.0;
+		self.gridDistanceX = 6.0;
+		self.gridDistanceY = 6.0;
 
 		self.grid = new Array(self.gridWidth);
 
@@ -79,8 +81,8 @@
 			// Fill the grid.
 			var realPart;
 			var imaginaryPart;
-			var realStep = self.xMax * 2 / self.gridWidth;
-			var imaginaryStep = self.yMax * 2 / self.gridHeight;
+			var realStep = self.gridDistanceX * 2 / self.gridWidth;
+			var imaginaryStep = self.gridDistanceY * 2 / self.gridHeight;
 
 			var plot = document.getElementById('plot');
 			var ctx = plot.getContext('2d');
@@ -89,12 +91,9 @@
 
 			for (var i = 0; i < self.gridWidth; i++) {
 				for (var j = 0; j < self.gridHeight; j++) {
-					realPart = (-1 * self.xMax) + realStep * i;
-					imaginaryPart = (-1 * self.yMax) + imaginaryStep * j;
-					if (j == 440) {
-						var qwer = 1;
-						qwer++;
-					}
+					realPart = (-1 * self.gridDistanceX) + realStep * i;
+					imaginaryPart = (-1 * self.gridDistanceY) + imaginaryStep * j;
+					
 					var z = new Complex(realPart, imaginaryPart);
 
 					// Stop iterating when the guess is close enough to one of the roots.
@@ -148,8 +147,8 @@
 
 			// Color in all of the roots.
 			for (var i = 0; i < newChoice.rootValue; i++) {
-				var centerX = (self.roots[i].realPart - -self.xMax) / realStep;
-				var centerY = (self.roots[i].imaginaryPart - -self.yMax) / imaginaryStep;
+				var centerX = (self.roots[i].realPart - -self.gridDistanceX) / realStep;
+				var centerY = (self.roots[i].imaginaryPart - -self.gridDistanceY) / imaginaryStep;
 				var radius = 8;
 
 				ctx.beginPath();
@@ -163,16 +162,38 @@
 		});
 
 		self.reset = function() {
+			self.gridCenterX = 0.0;
+			self.gridCenterY = 0.0;
+			self.gridDistanceX = 6.0;
+			self.gridDistanceY = 6.0;
 			self.selectedChoice(self.selectedChoice());
 		}
 	}
 
+	Newton.getMousePos = function (plot, evt) {
+		var rect = plot.getBoundingClientRect();
+		return {
+			x: (evt.clientX-rect.left)/(rect.right-rect.left)*plot.width,
+			y: (evt.clientY-rect.top)/(rect.bottom-rect.top)*plot.height
+			};
+	}
+
     Newton.DocumentReady = function () {
+    	var plot = document.getElementById('plot');
+
+    	plot.addEventListener('mouseup', function(evt) {
+	        var mousePos = Newton.getMousePos(plot, evt);
+	        
+	        self.gridCenterX = 0.0;
+			self.gridCenterY = 0.0;
+	        Newton.viewModelInstance.gridDistanceX = Newton.viewModelInstance.gridDistanceX / 2;
+	        Newton.viewModelInstance.gridDistanceY = Newton.viewModelInstance.gridDistanceY / 2;
+	        Newton.viewModelInstance.selectedChoice(Newton.viewModelInstance.selectedChoice());
+	      }, false);
+
     	Newton.viewModelInstance = new viewModel();
 		ko.applyBindings(Newton.viewModelInstance);
     }
-
-    
 }( window.Newton = window.Newton || {}, jQuery ));
 
 $(document).ready(function ()
