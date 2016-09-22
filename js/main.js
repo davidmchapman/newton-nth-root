@@ -91,8 +91,8 @@
 
 			for (var i = 0; i < self.gridWidth; i++) {
 				for (var j = 0; j < self.gridHeight; j++) {
-					realPart = (-1 * self.gridDistanceX) + realStep * i;
-					imaginaryPart = (-1 * self.gridDistanceY) + imaginaryStep * j;
+					realPart = (self.gridCenterX - self.gridDistanceX) + realStep * i;
+					imaginaryPart = (self.gridCenterY - self.gridDistanceY) + imaginaryStep * j;
 					
 					var z = new Complex(realPart, imaginaryPart);
 
@@ -147,8 +147,8 @@
 
 			// Color in all of the roots.
 			for (var i = 0; i < newChoice.rootValue; i++) {
-				var centerX = (self.roots[i].realPart - -self.gridDistanceX) / realStep;
-				var centerY = (self.roots[i].imaginaryPart - -self.gridDistanceY) / imaginaryStep;
+				var centerX = (self.roots[i].realPart - -self.gridDistanceX - self.gridCenterX) / realStep;
+				var centerY = (self.roots[i].imaginaryPart - -self.gridDistanceY - self.gridCenterY) / imaginaryStep;
 				var radius = 8;
 
 				ctx.beginPath();
@@ -173,8 +173,8 @@
 	Newton.getMousePos = function (plot, evt) {
 		var rect = plot.getBoundingClientRect();
 		return {
-			x: (evt.clientX-rect.left)/(rect.right-rect.left)*plot.width,
-			y: (evt.clientY-rect.top)/(rect.bottom-rect.top)*plot.height
+			x: Math.round((evt.clientX-rect.left)/(rect.right-rect.left)*plot.width),
+			y: Math.round((evt.clientY-rect.top)/(rect.bottom-rect.top)*plot.height)
 			};
 	}
 
@@ -184,8 +184,14 @@
     	plot.addEventListener('mouseup', function(evt) {
 	        var mousePos = Newton.getMousePos(plot, evt);
 	        
-	        self.gridCenterX = 0.0;
-			self.gridCenterY = 0.0;
+	        var realStepSize = Newton.viewModelInstance.gridDistanceX * 2 / Newton.viewModelInstance.gridWidth;
+	        var imaginaryStepSize = Newton.viewModelInstance.gridDistanceY * 2 / Newton.viewModelInstance.gridHeight;
+
+	        var currentMinX = Newton.viewModelInstance.gridCenterX - Newton.viewModelInstance.gridDistanceX;
+	        var currentMinY = Newton.viewModelInstance.gridCenterY - Newton.viewModelInstance.gridDistanceY;
+
+	        Newton.viewModelInstance.gridCenterX = currentMinX + mousePos.x * realStepSize;
+			Newton.viewModelInstance.gridCenterY = currentMinY + mousePos.y * imaginaryStepSize;
 	        Newton.viewModelInstance.gridDistanceX = Newton.viewModelInstance.gridDistanceX / 2;
 	        Newton.viewModelInstance.gridDistanceY = Newton.viewModelInstance.gridDistanceY / 2;
 	        Newton.viewModelInstance.selectedChoice(Newton.viewModelInstance.selectedChoice());
