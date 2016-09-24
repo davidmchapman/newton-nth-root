@@ -13,9 +13,14 @@
                 padding-top: 50px;
                 padding-bottom: 20px;
             }
+
+            .mono {
+                font-family: 'Roboto Mono', monospace;
+            }
         </style>
         <link rel="stylesheet" href="css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="css/main.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
 
         <script src="js/vendor/modernizr-2.8.3.min.js"></script>
     </head>
@@ -40,9 +45,29 @@
       </div>
     </nav>
 
-    <div class="text-center" style="padding-top: 20px;">
-      <canvas id="plot" width="600" height="600"></canvas>
+    <div class="container" style="margin-top: 20px;">
+        <div class="row">
+            <div class="col-xs-2">
+                <p class="mono">
+                    min x: <span data-bind="text: gridMinX"></span><br>
+                    max x: <span data-bind="text: gridMaxX"></span>
+                </p>
+                <p class="mono">
+                    min y: <span data-bind="text: gridMinY"></span><br>
+                    max y: <span data-bind="text: gridMaxY"></span>
+                </p>
+            </div>
+            <div class="col-xs-8">
+                <div class="text-center">
+                    <canvas id="plot" width="600" height="600"></canvas>
+                </div>
+            </div>
+            <div class="col-xs-2">
+
+            </div>
+        </div>
     </div>
+    
 
     <script src="js/vendor/jquery-1.11.2.min.js"></script>
     <script src="js/vendor/bootstrap.min.js"></script>

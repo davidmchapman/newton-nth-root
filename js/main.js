@@ -47,10 +47,38 @@
 		
 		self.gridWidth = 600;
 		self.gridHeight = 600;
-		self.gridCenterX = 0.0;
-		self.gridCenterY = 0.0;
-		self.gridDistanceX = 6.0;
-		self.gridDistanceY = 6.0;
+		self.gridCenterX = ko.observable(0.0);
+		self.gridCenterY = ko.observable(0.0);
+		self.gridDistanceX = ko.observable(6.0);
+		self.gridDistanceY = ko.observable(6.0);
+
+		self.gridMinX = ko.computed(function () {
+			var result = self.gridCenterX() - self.gridDistanceX();
+			var formattedResult = Math.sign(result) > 0 ? '+' : '';
+			formattedResult += result.toFixed(5);
+			return formattedResult;
+		});
+
+		self.gridMaxX = ko.computed(function () {
+			var result = self.gridCenterX() + self.gridDistanceX();
+			var formattedResult = Math.sign(result) > 0 ? '+' : '';
+			formattedResult += result.toFixed(5);
+			return formattedResult;
+		});
+
+		self.gridMinY = ko.computed(function () {
+			var result = self.gridCenterY() - self.gridDistanceY();
+			var formattedResult = Math.sign(result) > 0 ? '+' : '';
+			formattedResult += result.toFixed(5);
+			return formattedResult;
+		});
+
+		self.gridMaxY = ko.computed(function () {
+			var result = self.gridCenterY() + self.gridDistanceY();
+			var formattedResult = Math.sign(result) > 0 ? '+' : '';
+			formattedResult += result.toFixed(5);
+			return formattedResult;
+		});
 
 		self.grid = new Array(self.gridWidth);
 
@@ -81,8 +109,8 @@
 			// Fill the grid.
 			var realPart;
 			var imaginaryPart;
-			var realStep = self.gridDistanceX * 2 / self.gridWidth;
-			var imaginaryStep = self.gridDistanceY * 2 / self.gridHeight;
+			var realStep = self.gridDistanceX() * 2 / self.gridWidth;
+			var imaginaryStep = self.gridDistanceY() * 2 / self.gridHeight;
 
 			var plot = document.getElementById('plot');
 			var ctx = plot.getContext('2d');
@@ -91,8 +119,8 @@
 
 			for (var i = 0; i < self.gridWidth; i++) {
 				for (var j = 0; j < self.gridHeight; j++) {
-					realPart = (self.gridCenterX - self.gridDistanceX) + realStep * i;
-					imaginaryPart = (self.gridCenterY - self.gridDistanceY) + imaginaryStep * j;
+					realPart = (self.gridCenterX() - self.gridDistanceX()) + realStep * i;
+					imaginaryPart = (self.gridCenterY() - self.gridDistanceY()) + imaginaryStep * j;
 					
 					var z = new Complex(realPart, imaginaryPart);
 
@@ -147,8 +175,8 @@
 
 			// Color in all of the roots.
 			for (var i = 0; i < newChoice.rootValue; i++) {
-				var centerX = (self.roots[i].realPart - -self.gridDistanceX - self.gridCenterX) / realStep;
-				var centerY = (self.roots[i].imaginaryPart - -self.gridDistanceY - self.gridCenterY) / imaginaryStep;
+				var centerX = (self.roots[i].realPart - -self.gridDistanceX() - self.gridCenterX()) / realStep;
+				var centerY = (self.roots[i].imaginaryPart - -self.gridDistanceY() - self.gridCenterY()) / imaginaryStep;
 				var radius = 8;
 
 				ctx.beginPath();
@@ -162,10 +190,10 @@
 		});
 
 		self.reset = function() {
-			self.gridCenterX = 0.0;
-			self.gridCenterY = 0.0;
-			self.gridDistanceX = 6.0;
-			self.gridDistanceY = 6.0;
+			self.gridDistanceX(6.0);
+			self.gridDistanceY(6.0);
+			self.gridCenterX(0.0);
+			self.gridCenterY(0.0);
 			self.selectedChoice(self.selectedChoice());
 		}
 	}
@@ -181,19 +209,27 @@
     Newton.DocumentReady = function () {
     	var plot = document.getElementById('plot');
 
-    	plot.addEventListener('mouseup', function(evt) {
+    	plot.addEventListener('click', function(evt) {
 	        var mousePos = Newton.getMousePos(plot, evt);
 	        
-	        var realStepSize = Newton.viewModelInstance.gridDistanceX * 2 / Newton.viewModelInstance.gridWidth;
-	        var imaginaryStepSize = Newton.viewModelInstance.gridDistanceY * 2 / Newton.viewModelInstance.gridHeight;
+	        var realStepSize = Newton.viewModelInstance.gridDistanceX() * 2 / Newton.viewModelInstance.gridWidth;
+	        var imaginaryStepSize = Newton.viewModelInstance.gridDistanceY() * 2 / Newton.viewModelInstance.gridHeight;
 
-	        var currentMinX = Newton.viewModelInstance.gridCenterX - Newton.viewModelInstance.gridDistanceX;
-	        var currentMinY = Newton.viewModelInstance.gridCenterY - Newton.viewModelInstance.gridDistanceY;
+	        var currentMinX = Newton.viewModelInstance.gridCenterX() - Newton.viewModelInstance.gridDistanceX();
+	        var currentMinY = Newton.viewModelInstance.gridCenterY() - Newton.viewModelInstance.gridDistanceY();
 
-	        Newton.viewModelInstance.gridCenterX = currentMinX + mousePos.x * realStepSize;
-			Newton.viewModelInstance.gridCenterY = currentMinY + mousePos.y * imaginaryStepSize;
-	        Newton.viewModelInstance.gridDistanceX = Newton.viewModelInstance.gridDistanceX / 2;
-	        Newton.viewModelInstance.gridDistanceY = Newton.viewModelInstance.gridDistanceY / 2;
+	        Newton.viewModelInstance.gridCenterX(currentMinX + mousePos.x * realStepSize);
+			Newton.viewModelInstance.gridCenterY(currentMinY + mousePos.y * imaginaryStepSize);
+
+			if (evt.shiftKey) {
+				Newton.viewModelInstance.gridDistanceX(Newton.viewModelInstance.gridDistanceX() * 2);
+	        	Newton.viewModelInstance.gridDistanceY(Newton.viewModelInstance.gridDistanceY() * 2);
+			}
+			else {
+				Newton.viewModelInstance.gridDistanceX(Newton.viewModelInstance.gridDistanceX() / 2);
+	        	Newton.viewModelInstance.gridDistanceY(Newton.viewModelInstance.gridDistanceY() / 2);
+			}
+
 	        Newton.viewModelInstance.selectedChoice(Newton.viewModelInstance.selectedChoice());
 	      }, false);
 
